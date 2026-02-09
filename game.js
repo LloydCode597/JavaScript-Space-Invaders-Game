@@ -11,6 +11,8 @@ class Player {
       y: 0,
     };
 
+    this.rotation = 0;
+
     const image = new Image();
     image.src = "./img/spaceship.png";
     image.onload = () => {
@@ -24,8 +26,19 @@ class Player {
       };
     };
   }
+
   draw() {
-    if (!this.image) return;
+    ctx.save();
+    ctx.translate(
+      player.position.x + player.width / 2,
+      player.position.y + player.height / 2,
+    );
+    ctx.rotate(this.rotation);
+
+    ctx.translate(
+      -player.position.x - player.width / 2,
+      -player.position.y - player.height / 2,
+    );
     ctx.drawImage(
       this.image,
       this.position.x,
@@ -33,17 +46,82 @@ class Player {
       this.width,
       this.height,
     );
-    // ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+    ctx.restore();
+  }
+
+  update() {
+    if (!this.image) return;
+    {
+      this.draw();
+      this.position.x += this.velocity.x;
+    }
   }
 }
+
 const player = new Player();
-player.draw();
+const keys = {
+  a: {
+    pressed: false,
+  },
+  d: {
+    pressed: false,
+  },
+  space: {
+    pressed: false,
+  },
+};
 
 function animate() {
   requestAnimationFrame(animate);
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  player.draw();
+  player.update();
+
+  if (keys.a.pressed && player.position.x >= 0) {
+    player.velocity.x = -7;
+    player.rotation = -0.15;
+  } else if (
+    keys.d.pressed &&
+    player.position.x + player.width <= canvas.width
+  ) {
+    player.velocity.x = 7;
+    player.rotation = 0.15;
+  } else {
+    player.velocity.x = 0;
+    player.rotation = 0;
+  }
 }
 
 animate();
+
+addEventListener("keydown", ({ key }) => {
+  switch (key) {
+    case "a":
+      console.log("left");
+      keys.a.pressed = true;
+      break;
+    case "d":
+      console.log("right");
+      keys.d.pressed = true;
+      break;
+    case " ":
+      console.log("space");
+      break;
+  }
+});
+
+addEventListener("keyup", ({ key }) => {
+  switch (key) {
+    case "a":
+      console.log("left");
+      keys.a.pressed = false;
+      break;
+    case "d":
+      console.log("right");
+      keys.d.pressed = false;
+      break;
+    case " ":
+      console.log("space");
+      break;
+  }
+});
