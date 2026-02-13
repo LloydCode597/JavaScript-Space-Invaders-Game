@@ -203,11 +203,12 @@ function animate() {
     }
   });
 
-  grids.forEach((grid) => {
+  grids.forEach((grid, gridIndex) => {
     grid.update();
     grid.invaders.forEach((invader, index) => {
       invader.update({ velocity: grid.velocity });
 
+      // projectiles hit invaders
       projectiles.forEach((projectile, projectileIndex) => {
         if (
           projectile.position.y - projectile.radius <=
@@ -224,9 +225,23 @@ function animate() {
             const projectileFound = projectiles.find((projectile2) => {
               return projectile2 === projectile;
             });
+
+            // remove invader and projectile
             if (invaderFound && projectileFound) {
               grid.invaders.splice(index, 1);
               projectiles.splice(projectileIndex, 1);
+
+              if (grid.invaders.length > 0) {
+                const firstInvader = grid.invaders[0];
+                const lastInvader = grid.invaders[grid.invaders.length - 1];
+                grid.width =
+                  lastInvader.position.x -
+                  firstInvader.position.x +
+                  lastInvader.width;
+                grid.position.x = firstInvader.position.x;
+              } else {
+                grids.splice(gridIndex, 1);
+              }
             }
           }, 0);
         }
