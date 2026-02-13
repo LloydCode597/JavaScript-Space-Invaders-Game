@@ -207,6 +207,30 @@ function animate() {
     grid.update();
     grid.invaders.forEach((invader, index) => {
       invader.update({ velocity: grid.velocity });
+
+      projectiles.forEach((projectile, projectileIndex) => {
+        if (
+          projectile.position.y - projectile.radius <=
+            invader.position.y + invader.height &&
+          projectile.position.x + projectile.radius >= invader.position.x &&
+          projectile.position.x - projectile.radius <=
+            invader.position.x + invader.width &&
+          projectile.position.y + projectile.radius >= invader.position.y
+        ) {
+          setTimeout(() => {
+            const invaderFound = grid.invaders.find((invader2) => {
+              return invader2 === invader;
+            });
+            const projectileFound = projectiles.find((projectile2) => {
+              return projectile2 === projectile;
+            });
+            if (invaderFound && projectileFound) {
+              grid.invaders.splice(index, 1);
+              projectiles.splice(projectileIndex, 1);
+            }
+          }, 0);
+        }
+      });
     });
   });
 
