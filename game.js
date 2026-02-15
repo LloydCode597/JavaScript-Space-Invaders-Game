@@ -58,50 +58,6 @@ class Player {
   }
 }
 
-class Projectile {
-  constructor({ position, velocity }) {
-    this.position = position;
-    this.velocity = velocity;
-
-    this.radius = 4;
-  }
-
-  draw() {
-    ctx.beginPath();
-    ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = "red";
-    ctx.fill();
-    ctx.closePath();
-  }
-
-  update() {
-    this.draw();
-    this.position.x += this.velocity.x;
-    this.position.y += this.velocity.y;
-  }
-}
-
-class InvaderProjectile {
-  constructor({ position, velocity }) {
-    this.position = position;
-    this.velocity = velocity;
-
-    this.width = 3;
-    this.height = 10;
-  }
-
-  draw() {
-    ctx.fillStyle = "white";
-    ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
-  }
-
-  update() {
-    this.draw();
-    this.position.x += this.velocity.x;
-    this.position.y += this.velocity.y;
-  }
-}
-
 class Invader {
   constructor({ position }) {
     this.velocity = {
@@ -158,6 +114,81 @@ class Invader {
   }
 }
 
+class Projectile {
+  constructor({ position, velocity }) {
+    this.position = position;
+    this.velocity = velocity;
+
+    this.radius = 4;
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = "red";
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  update() {
+    this.draw();
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+  }
+}
+
+class InvaderProjectile {
+  constructor({ position, velocity }) {
+    this.position = position;
+    this.velocity = velocity;
+
+    this.width = 3;
+    this.height = 10;
+  }
+
+  draw() {
+    ctx.fillStyle = "white";
+    ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+  }
+
+  update() {
+    this.draw();
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+  }
+}
+
+class Particle {
+  constructor({ position, velocity, radius, color, fades }) {
+    this.position = position;
+    this.velocity = velocity;
+
+    this.radius = radius;
+    this.color = color;
+    this.opacity = 1;
+    this.fades = fades;
+  }
+
+  draw() {
+    ctx.save();
+    ctx.globalAlpha = this.opacity;
+    ctx.beginPath();
+    ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+    ctx.closePath();
+    ctx.restore();
+  }
+
+  update() {
+    this.draw();
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+
+    this.opacity -= 0.01;
+  }
+}
+
 class Grid {
   constructor() {
     this.position = {
@@ -209,6 +240,7 @@ const player = new Player();
 const projectiles = [];
 const grids = [];
 const invaderProjectiles = [];
+const particles = [];
 
 const keys = {
   a: {
@@ -225,11 +257,40 @@ const keys = {
 let frames = 0;
 let randomInterval = Math.floor(Math.random() * 500 + 500);
 
+function createParticles({ object, color, fades }) {
+  for (let i = 0; i < 15; i++) {
+    particles.push(
+      new Particle({
+        position: {
+          x: object.position.x + object.width / 2,
+          y: object.position.y + object.height / 2,
+        },
+        velocity: {
+          x: (Math.random() - 0.5) * 2,
+          y: (Math.random() - 0.5) * 2,
+        },
+        radius: Math.random() * 3 + 1,
+        color: color || "#BAA0DE",
+        fades: true,
+      }),
+    );
+  }
+}
+
 function animate() {
   requestAnimationFrame(animate);
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   player.update();
+  particles.forEach((particle, index) => {
+    if (particle.opacity <= 0) {
+      setTimeout(() => {
+        particles.splice(index, 1);
+      }, 0);
+    } else {
+      particle.update();
+    }
+  });
 
   invaderProjectiles.forEach((invaderProjectile, index) => {
     if (
@@ -242,6 +303,7 @@ function animate() {
     } else {
       invaderProjectile.update();
     }
+    // projectile hits player
     if (
       invaderProjectile.position.y + invaderProjectile.height >=
         player.position.y &&
@@ -254,6 +316,7 @@ function animate() {
         console.log("You lose");
         // alert("You lose!");
         // window.location.reload();
+        createParticles({ object: player, color: "white" });
       }, 0);
     }
   });
@@ -301,6 +364,7 @@ function animate() {
 
             // remove invader and projectile
             if (invaderFound && projectileFound) {
+              createParticles({ object: invader });
               grid.invaders.splice(index, 1);
               projectiles.splice(projectileIndex, 1);
 
