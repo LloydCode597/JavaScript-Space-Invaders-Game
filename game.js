@@ -12,6 +12,7 @@ class Player {
     };
 
     this.rotation = 0;
+    this.opacity = 1;
 
     const image = new Image();
     image.src = "./img/spaceship.png";
@@ -29,6 +30,7 @@ class Player {
 
   draw() {
     ctx.save();
+    ctx.globalAlpha = this.opacity;
     ctx.translate(
       player.position.x + player.width / 2,
       player.position.y + player.height / 2,
@@ -256,6 +258,10 @@ const keys = {
 
 let frames = 0;
 let randomInterval = Math.floor(Math.random() * 500 + 500);
+let game = {
+  over: false,
+  active: true,
+};
 
 for (let i = 0; i < 100; i++) {
   particles.push(
@@ -296,6 +302,7 @@ function createParticles({ object, color, fades }) {
 }
 
 function animate() {
+  if (!game.active) return;
   requestAnimationFrame(animate);
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -334,13 +341,17 @@ function animate() {
         player.position.x &&
       invaderProjectile.position.x <= player.position.x + player.width
     ) {
+      console.log("You lose");
       setTimeout(() => {
         invaderProjectiles.splice(index, 1);
-        console.log("You lose");
-        // alert("You lose!");
-        // window.location.reload();
-        createParticles({ object: player, color: "white", fades: true });
+        player.opacity = 0;
+        game.over = true;
       }, 0);
+
+      setTimeout(() => {
+        game.active = false;
+      }, 2000);
+      createParticles({ object: player, color: "white", fades: true });
     }
   });
 
@@ -436,6 +447,8 @@ function animate() {
 animate();
 
 addEventListener("keydown", ({ key }) => {
+  if (game.over) return;
+
   switch (key) {
     case "a":
       console.log("left");
