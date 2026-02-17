@@ -1,3 +1,4 @@
+const scoreEl = document.querySelector("#score");
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 
@@ -222,7 +223,6 @@ class Grid {
         );
       }
     }
-    console.log(this.invaders);
   }
 
   update() {
@@ -262,6 +262,8 @@ let game = {
   over: false,
   active: true,
 };
+
+let score = 0;
 
 for (let i = 0; i < 100; i++) {
   particles.push(
@@ -398,6 +400,10 @@ function animate() {
 
             // remove invader and projectile
             if (invaderFound && projectileFound) {
+              score += 100;
+              console.log(score);
+              scoreEl.innerHTML = score;
+
               createParticles({ object: invader, fades: true });
               grid.invaders.splice(index, 1);
               projectiles.splice(projectileIndex, 1);
@@ -438,7 +444,6 @@ function animate() {
   if (frames % randomInterval === 0) {
     grids.push(new Grid());
     randomInterval = Math.floor(Math.random() * 500 + 500);
-    console.log(randomInterval);
   }
 
   frames++;
@@ -451,15 +456,12 @@ addEventListener("keydown", ({ key }) => {
 
   switch (key) {
     case "a":
-      console.log("left");
       keys.a.pressed = true;
       break;
     case "d":
-      console.log("right");
       keys.d.pressed = true;
       break;
     case " ":
-      console.log("space");
       projectiles.push(
         new Projectile({
           position: {
@@ -479,15 +481,12 @@ addEventListener("keydown", ({ key }) => {
 addEventListener("keyup", ({ key }) => {
   switch (key) {
     case "a":
-      console.log("left");
       keys.a.pressed = false;
       break;
     case "d":
-      console.log("right");
       keys.d.pressed = false;
       break;
     case " ":
-      console.log("space");
       break;
   }
 });
