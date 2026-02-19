@@ -405,6 +405,30 @@ function animate() {
               console.log(score);
               scoreEl.innerHTML = score;
 
+              // dynamic score labels
+              const scoreLabel = document.createElement("label");
+              scoreLabel.innerHTML = "+100";
+              scoreLabel.style.position = "absolute";
+              scoreLabel.style.color = "white";
+              scoreLabel.style.left = `${invader.position.x}px`;
+              scoreLabel.style.top = `${invader.position.y}px`;
+              scoreLabel.style.userSelect = "none";
+              document.getElementById("parentDiv").appendChild(scoreLabel);
+
+              gsap.to(scoreLabel, {
+                y: -30,
+                opacity: 0,
+                duration: 1,
+                ease: "easeOut",
+                onComplete: () => {
+                  document.getElementById("parentDiv").removeChild(scoreLabel);
+                },
+              });
+
+              // setTimeout(() => {
+              //   scoreLabel.remove();
+              // }, 1000);
+
               createParticles({ object: invader, fades: true });
               grid.invaders.splice(index, 1);
               projectiles.splice(projectileIndex, 1);
