@@ -49,5 +49,5 @@ This project demonstrates core game development concepts including:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/space-invaders.git
+   git clone https://github.com/LloydCode597/JavaScript-Space-Invaders-Game.git
    cd space-invaders
