@@ -239,6 +239,29 @@ class Grid {
   }
 }
 
+class Bomb {
+  constructor({ position, velocity }) {
+    this.position = position;
+    this.velocity = velocity;
+    this.radius = 30;
+    this.color = "red";
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  update() {
+    this.draw();
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+  }
+}
+
 const player = new Player();
 const projectiles = [];
 const grids = [];
@@ -402,7 +425,7 @@ function animate() {
             // remove invader and projectile
             if (invaderFound && projectileFound) {
               score += 100;
-              console.log(score);
+              // console.log(score);
               scoreEl.innerHTML = score;
 
               // dynamic score labels
@@ -424,10 +447,6 @@ function animate() {
                   document.getElementById("parentDiv").removeChild(scoreLabel);
                 },
               });
-
-              // setTimeout(() => {
-              //   scoreLabel.remove();
-              // }, 1000);
 
               createParticles({ object: invader, fades: true });
               grid.invaders.splice(index, 1);
