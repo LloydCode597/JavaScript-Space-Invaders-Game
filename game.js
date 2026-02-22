@@ -240,26 +240,70 @@ class Grid {
 }
 
 class Bomb {
+  static radius = 30;
   constructor({ position, velocity }) {
     this.position = position;
     this.velocity = velocity;
-    this.radius = 30;
+    this.radius = 0;
     this.color = "red";
+    this.opacity = 1;
+    this.active = false;
+
+    gsap.to(this, {
+      radius: 30,
+      duration: 0.5,
+      ease: "easeOut",
+    });
   }
 
   draw() {
+    ctx.save();
+    ctx.globalAlpha = this.opacity;
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+    ctx.closePath();
     ctx.fillStyle = this.color;
     ctx.fill();
-    ctx.closePath();
+    ctx.restore();
   }
 
   update() {
     this.draw();
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
+
+    // bounce off walls
+    if (
+      this.position.x + this.radius + this.velocity.x >= canvas.width ||
+      this.position.x - this.radius + this.velocity.x <= 0
+    ) {
+      this.velocity.x = -this.velocity.x;
+    } else if (
+      this.position.y + this.radius + this.velocity.y >= canvas.height ||
+      this.position.y - this.radius + this.velocity.y <= 0
+    ) {
+      this.velocity.y = -this.velocity.y;
+    }
   }
+  explode() {
+    this.active = true;
+    this.velocity.x = 0;
+    this.velocity.y = 0;
+    gsap.to(this, {
+      radius: 200,
+      color: "white",
+    });
+
+    gsap.to(this, {
+      delay: 0.1,
+      opacity: 0,
+      duration: 0.15,
+    });
+  }
+}
+
+function randomBetween(min, max) {
+  return Math.random() * (max - min) + min;
 }
 
 const player = new Player();
@@ -267,6 +311,7 @@ const projectiles = [];
 const grids = [];
 const invaderProjectiles = [];
 const particles = [];
+const bombs = [];
 
 const keys = {
   a: {
@@ -327,11 +372,60 @@ function createParticles({ object, color, fades }) {
   }
 }
 
+function createScoreLabel({ object, score = 100 }) {
+  const scoreLabel = document.createElement("label");
+  scoreLabel.innerHTML = `+${score}`;
+  scoreLabel.style.position = "absolute";
+  scoreLabel.style.color = "white";
+  scoreLabel.style.left = `${object.position.x}px`;
+  scoreLabel.style.top = `${object.position.y}px`;
+  scoreLabel.style.userSelect = "none";
+  document.getElementById("parentDiv").appendChild(scoreLabel);
+
+  gsap.to(scoreLabel, {
+    y: -30,
+    opacity: 0,
+    duration: 1,
+    ease: "easeOut",
+    onComplete: () => {
+      document.getElementById("parentDiv").removeChild(scoreLabel);
+    },
+  });
+}
+
 function animate() {
   if (!game.active) return;
   requestAnimationFrame(animate);
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (frames % 200 === 0 && bombs.length < 3) {
+    bombs.push(
+      new Bomb({
+        position: {
+          x: randomBetween(Bomb.radius, canvas.width - Bomb.radius),
+          y: randomBetween(Bomb.radius, canvas.height - Bomb.radius),
+        },
+        velocity: {
+          x: (Math.random() - 0.5) * 6,
+          y: (Math.random() - 0.5) * 6,
+        },
+      }),
+    );
+  }
+
+  for (let i = bombs.length - 1; i >= 0; i--) {
+    const bomb = bombs[i];
+    if (bomb.opacity <= 0) {
+      setTimeout(() => {
+        bombs.splice(i, 1);
+      }, 0);
+    } else {
+      bomb.update();
+    }
+    bomb.update();
+  }
+
   player.update();
   particles.forEach((particle, index) => {
     if (particle.position.y - particle.radius >= canvas.height) {
@@ -377,19 +471,41 @@ function animate() {
       setTimeout(() => {
         game.active = false;
       }, 2000);
-      createParticles({ object: player, color: "white", fades: true });
+
+      createParticles({
+        object: player,
+        color: "white",
+        fades: true,
+      });
     }
   });
 
-  projectiles.forEach((projectile, index) => {
+  for (let i = projectiles.length - 1; i >= 0; i--) {
+    const projectile = projectiles[i];
+
+    for (let j = bombs.length - 1; j >= 0; j--) {
+      const bomb = bombs[j];
+
+      // if projectile hits bomb, remove projectile
+      if (
+        Math.hypot(
+          projectile.position.x - bomb.position.x,
+          projectile.position.y - bomb.position.y,
+        ) <
+          projectile.radius + bomb.radius &&
+        !bomb.active
+      ) {
+        projectiles.splice(i, 1);
+        bomb.explode();
+      }
+    }
+
     if (projectile.position.y + projectile.radius <= 0) {
-      setTimeout(() => {
-        projectiles.splice(index, 1);
-      }, 0);
+      projectiles.splice(i, 1);
     } else {
       projectile.update();
     }
-  });
+  }
 
   grids.forEach((grid, gridIndex) => {
     grid.update();
@@ -401,8 +517,34 @@ function animate() {
       );
       grid.invaders[randomInvaderIndex].shoot(invaderProjectiles);
     }
-    grid.invaders.forEach((invader, index) => {
+
+    for (let index = grid.invaders.length - 1; index >= 0; index--) {
+      const invader = grid.invaders[index];
+
       invader.update({ velocity: grid.velocity });
+
+      for (let j = bombs.length - 1; j >= 0; j--) {
+        const bomb = bombs[j];
+
+        const invaderRadius = 15;
+
+        // if bomb hits bomb, remove invader
+        if (
+          Math.hypot(
+            invader.position.x - bomb.position.x,
+            invader.position.y - bomb.position.y,
+          ) <
+            invaderRadius + bomb.radius &&
+          bomb.active
+        ) {
+          score += 50;
+          scoreEl.innerHTML = score;
+          grid.invaders.splice(index, 1);
+          createScoreLabel({ object: invader, score: 50 });
+
+          createParticles({ object: invader, fades: true });
+        }
+      }
 
       // projectiles hit invaders
       projectiles.forEach((projectile, projectileIndex) => {
@@ -429,24 +571,7 @@ function animate() {
               scoreEl.innerHTML = score;
 
               // dynamic score labels
-              const scoreLabel = document.createElement("label");
-              scoreLabel.innerHTML = "+100";
-              scoreLabel.style.position = "absolute";
-              scoreLabel.style.color = "white";
-              scoreLabel.style.left = `${invader.position.x}px`;
-              scoreLabel.style.top = `${invader.position.y}px`;
-              scoreLabel.style.userSelect = "none";
-              document.getElementById("parentDiv").appendChild(scoreLabel);
-
-              gsap.to(scoreLabel, {
-                y: -30,
-                opacity: 0,
-                duration: 1,
-                ease: "easeOut",
-                onComplete: () => {
-                  document.getElementById("parentDiv").removeChild(scoreLabel);
-                },
-              });
+              createScoreLabel({ object: invader });
 
               createParticles({ object: invader, fades: true });
               grid.invaders.splice(index, 1);
@@ -467,7 +592,7 @@ function animate() {
           }, 0);
         }
       });
-    });
+    }
   });
 
   if (keys.a.pressed && player.position.x >= 0) {
