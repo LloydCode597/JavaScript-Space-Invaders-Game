@@ -4,7 +4,7 @@ const ctx = canvas.getContext("2d");
 
 // set canvas size
 canvas.width = 1024;
-canvas.height = 600;
+canvas.height = 680;
 
 class Player {
   constructor() {
