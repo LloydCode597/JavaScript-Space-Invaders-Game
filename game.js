@@ -119,9 +119,10 @@ class Invader {
 }
 
 class Projectile {
-  constructor({ position, velocity }) {
+  constructor({ position, velocity, color = "red" }) {
     this.position = position;
     this.velocity = velocity;
+    this.color = color;
 
     this.radius = 4;
   }
@@ -129,7 +130,7 @@ class Projectile {
   draw() {
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = "red";
+    ctx.fillStyle = this.color;
     ctx.fill();
     ctx.closePath();
   }
@@ -190,6 +191,29 @@ class Particle {
     this.position.y += this.velocity.y;
 
     if (this.fades) this.opacity -= 0.01;
+  }
+}
+
+class PowerUp {
+  constructor({ position, velocity }) {
+    this.position = position;
+    this.velocity = velocity;
+
+    this.radius = 15;
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = "yellow";
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  update() {
+    this.draw();
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
   }
 }
 
@@ -312,6 +336,18 @@ const grids = [];
 const invaderProjectiles = [];
 const particles = [];
 const bombs = [];
+const powerUps = [
+  new PowerUp({
+    position: {
+      x: 0,
+      y: 300,
+    },
+    velocity: {
+      x: 5,
+      y: 0,
+    },
+  }),
+];
 
 const keys = {
   a: {
@@ -398,6 +434,10 @@ function animate() {
   requestAnimationFrame(animate);
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  powerUps.forEach((powerUp) => {
+    powerUp.update();
+  });
 
   if (frames % 200 === 0 && bombs.length < 3) {
     bombs.push(
@@ -497,6 +537,29 @@ function animate() {
       ) {
         projectiles.splice(i, 1);
         bomb.explode();
+      }
+    }
+
+    for (let j = powerUps.length - 1; j >= 0; j--) {
+      const powerUp = powerUps[j];
+
+      // if projectile hits powerUp, remove projectile and powerUp
+      if (
+        Math.hypot(
+          projectile.position.x - powerUp.position.x,
+          projectile.position.y - powerUp.position.y,
+        ) <
+        projectile.radius + powerUp.radius
+      ) {
+        projectiles.splice(i, 1);
+        powerUps.splice(j, 1);
+        player.powerUp = "MachineGun";
+        console.log("power up!");
+
+        setTimeout(() => {
+          player.powerUp = null;
+          console.log("power ended");
+        }, 5000);
       }
     }
 
@@ -614,6 +677,20 @@ function animate() {
     grids.push(new Grid());
     randomInterval = Math.floor(Math.random() * 500 + 500);
   }
+  if (keys.space.pressed && player.powerUp === "MachineGun")
+    projectiles.push(
+      new Projectile({
+        position: {
+          x: player.position.x + player.width / 2,
+          y: player.position.y,
+        },
+        velocity: {
+          x: 0,
+          y: -10,
+        },
+        color: "cyan",
+      }),
+    );
 
   frames++;
 }
@@ -631,6 +708,9 @@ addEventListener("keydown", ({ key }) => {
       keys.d.pressed = true;
       break;
     case " ":
+      keys.space.pressed = true;
+      if (player.powerUp === "MachineGun") return;
+
       projectiles.push(
         new Projectile({
           position: {
@@ -643,6 +723,7 @@ addEventListener("keydown", ({ key }) => {
           },
         }),
       );
+
       break;
   }
 });
@@ -656,6 +737,7 @@ addEventListener("keyup", ({ key }) => {
       keys.d.pressed = false;
       break;
     case " ":
+      keys.space.pressed = false;
       break;
   }
 });
