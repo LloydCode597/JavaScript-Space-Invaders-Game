@@ -336,18 +336,7 @@ const grids = [];
 const invaderProjectiles = [];
 const particles = [];
 const bombs = [];
-const powerUps = [
-  new PowerUp({
-    position: {
-      x: 0,
-      y: 300,
-    },
-    velocity: {
-      x: 5,
-      y: 0,
-    },
-  }),
-];
+const powerUps = [];
 
 const keys = {
   a: {
@@ -435,10 +424,34 @@ function animate() {
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  powerUps.forEach((powerUp) => {
-    powerUp.update();
-  });
+  console.log(powerUps);
 
+  for (let i = powerUps.length - 1; i >= 0; i--) {
+    const powerUp = powerUps[i];
+    if (powerUp.position.x - powerUp.radius >= canvas.width) {
+      powerUps.splice(i, 1);
+    } else {
+      powerUp.update();
+    }
+  }
+
+  // spawn powerUps
+  if (frames % 500 === 0) {
+    powerUps.push(
+      new PowerUp({
+        position: {
+          x: 0,
+          y: Math.random() * 300 + 15,
+        },
+        velocity: {
+          x: 5,
+          y: 0,
+        },
+      }),
+    );
+  }
+
+  // spawn bombs
   if (frames % 200 === 0 && bombs.length < 3) {
     bombs.push(
       new Bomb({
@@ -677,7 +690,8 @@ function animate() {
     grids.push(new Grid());
     randomInterval = Math.floor(Math.random() * 500 + 500);
   }
-  if (keys.space.pressed && player.powerUp === "MachineGun")
+
+  if (keys.space.pressed && player.powerUp === "MachineGun" && frames % 2 === 0)
     projectiles.push(
       new Projectile({
         position: {
