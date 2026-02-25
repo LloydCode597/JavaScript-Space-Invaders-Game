@@ -257,7 +257,7 @@ class Grid {
     this.velocity.y = 0;
 
     if (this.position.x + this.width >= canvas.width || this.position.x <= 0) {
-      this.velocity.x = -this.velocity.x;
+      this.velocity.x = -this.velocity.x * 1.15;
       this.velocity.y += 30;
     }
   }
@@ -418,13 +418,37 @@ function createScoreLabel({ object, score = 100 }) {
   });
 }
 
+function rectangularCollision({ rectangle1, rectangle2 }) {
+  return (
+    rectangle1.position.y + rectangle1.height >= rectangle2.position.y &&
+    rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
+    rectangle1.position.x <= rectangle2.position.x + rectangle2.width
+  );
+}
+
+function endgame() {
+  setTimeout(() => {
+    player.opacity = 0;
+    game.over = true;
+  }, 0);
+
+  setTimeout(() => {
+    game.active = false;
+  }, 2000);
+
+  createParticles({
+    object: player,
+    color: "white",
+    fades: true,
+  });
+}
+
+let spawnBuffer = 500;
 function animate() {
   if (!game.active) return;
   requestAnimationFrame(animate);
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  console.log(powerUps);
 
   for (let i = powerUps.length - 1; i >= 0; i--) {
     const powerUp = powerUps[i];
@@ -508,28 +532,13 @@ function animate() {
     }
     // projectile hits player
     if (
-      invaderProjectile.position.y + invaderProjectile.height >=
-        player.position.y &&
-      invaderProjectile.position.x + invaderProjectile.width >=
-        player.position.x &&
-      invaderProjectile.position.x <= player.position.x + player.width
+      rectangularCollision({
+        rectangle1: invaderProjectile,
+        rectangle2: player,
+      })
     ) {
-      console.log("You lose");
-      setTimeout(() => {
-        invaderProjectiles.splice(index, 1);
-        player.opacity = 0;
-        game.over = true;
-      }, 0);
-
-      setTimeout(() => {
-        game.active = false;
-      }, 2000);
-
-      createParticles({
-        object: player,
-        color: "white",
-        fades: true,
-      });
+      invaderProjectiles.splice(index, 1);
+      endgame();
     }
   });
 
@@ -567,11 +576,9 @@ function animate() {
         projectiles.splice(i, 1);
         powerUps.splice(j, 1);
         player.powerUp = "MachineGun";
-        console.log("power up!");
 
         setTimeout(() => {
           player.powerUp = null;
-          console.log("power ended");
         }, 5000);
       }
     }
@@ -643,7 +650,7 @@ function animate() {
             // remove invader and projectile
             if (invaderFound && projectileFound) {
               score += 100;
-              // console.log(score);
+
               scoreEl.innerHTML = score;
 
               // dynamic score labels
@@ -668,7 +675,16 @@ function animate() {
           }, 0);
         }
       });
-    }
+      // remove player if invader reaches bottom of screen
+      if (
+        rectangularCollision({
+          rectangle1: invader,
+          rectangle2: player,
+        }) &&
+        !game.over
+      )
+        endgame();
+    } // end of invaders loop over grid.invaders
   });
 
   if (keys.a.pressed && player.position.x >= 0) {
@@ -687,8 +703,13 @@ function animate() {
 
   // spawn enemies
   if (frames % randomInterval === 0) {
+    console.log(spawnBuffer);
+    console.log(randomInterval);
+    spawnBuffer = spawnBuffer < 0 ? 100 : spawnBuffer;
     grids.push(new Grid());
-    randomInterval = Math.floor(Math.random() * 500 + 500);
+    randomInterval = Math.floor(Math.random() * 500 + spawnBuffer);
+    frames = 0;
+    spawnBuffer -= 100;
   }
 
   if (keys.space.pressed && player.powerUp === "MachineGun" && frames % 2 === 0)
