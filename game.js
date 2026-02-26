@@ -28,6 +28,9 @@ class Player {
         y: canvas.height - this.height - 22,
       };
     };
+
+    this.particles = [];
+    this.frames = 0;
   }
 
   draw() {
@@ -58,6 +61,25 @@ class Player {
     {
       this.draw();
       this.position.x += this.velocity.x;
+    }
+
+    this.frames++;
+    if (this.frames % 2 === 0) {
+      this.particles.push(
+        new Particle({
+          position: {
+            x: this.position.x + this.width / 2,
+            y: this.position.y + this.height / 2,
+          },
+          velocity: {
+            x: (Math.random() - 0.5) * 1.5,
+            y: 1.5,
+          },
+          radius: Math.random() * 2,
+          color: "white",
+          fades: true,
+        }),
+      );
     }
   }
 }
@@ -504,6 +526,18 @@ function animate() {
   }
 
   player.update();
+
+  for (let i = player.particles.length - 1; i >= 0; i--) {
+    const particle = player.particles[i];
+    if (particle.opacity <= 0) {
+      setTimeout(() => {
+        player.particles.splice(i, 1);
+      }, 0);
+    } else {
+      particle.update();
+    }
+  }
+
   particles.forEach((particle, index) => {
     if (particle.position.y - particle.radius >= canvas.height) {
       particle.position.x = Math.random() * canvas.width;
