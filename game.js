@@ -763,8 +763,11 @@ function animate() {
 
   frames++;
 }
-
-animate();
+document.querySelector("#startButton").addEventListener("click", () => {
+  document.querySelector("#startScreen").style.display = "none";
+  document.querySelector("#scoreContainer").style.display = "block";
+  animate();
+});
 
 addEventListener("keydown", ({ key }) => {
   if (game.over) return;

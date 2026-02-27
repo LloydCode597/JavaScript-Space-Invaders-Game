@@ -13,6 +13,7 @@
 
 <div style="position: relative" id="parentDiv">
   <p
+    id="scoreContainer"
     style="
       position: absolute;
       z-index: 10;
@@ -20,11 +21,64 @@
       left: 10px;
       top: 10px;
       margin: 0;
+      display: none;
     "
   >
     <span>Score: </span><span id="score">0</span>
   </p>
   <canvas></canvas>
+  <!-- Background Container -->
+  <div
+    id="startScreen"
+    style="
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background: url(&quot;./img/startScreenBackground.png&quot;);
+      z-index: 29;
+      background-size: contain;
+      background-repeat: no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    "
+  >
+    <div style="text-align: center">
+      <h1 style="color: aliceblue">Space Invaders</h1>
+
+      <!-- buttom -->
+      <div
+        style="cursor: pointer; position: relative; display: inline-block"
+        id="startButton"
+      >
+        <img
+          src="./img/button.png"
+          alt="Start Button"
+          style="
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+          "
+          id="startButton"
+        />
+        <span
+          style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+          "
+          >Start</span
+        >
+      </div>
+    </div>
+  </div>
 </div>
 <script
   src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"
