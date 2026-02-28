@@ -58,10 +58,11 @@ class Player {
 
   update() {
     if (!this.image) return;
-    {
-      this.draw();
-      this.position.x += this.velocity.x;
-    }
+
+    this.draw();
+    this.position.x += this.velocity.x;
+
+    if (this.opacity !== 1) return;
 
     this.frames++;
     if (this.frames % 2 === 0) {
@@ -352,15 +353,15 @@ function randomBetween(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-const player = new Player();
-const projectiles = [];
-const grids = [];
-const invaderProjectiles = [];
-const particles = [];
-const bombs = [];
-const powerUps = [];
+let player = new Player();
+let projectiles = [];
+let grids = [];
+let invaderProjectiles = [];
+let particles = [];
+let bombs = [];
+let powerUps = [];
 
-const keys = {
+let keys = {
   a: {
     pressed: false,
   },
@@ -381,22 +382,53 @@ let game = {
 
 let score = 0;
 
-for (let i = 0; i < 100; i++) {
-  particles.push(
-    new Particle({
-      position: {
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-      },
-      velocity: {
-        x: 0,
-        y: 0.2,
-      },
-      radius: Math.random() * 2,
-      color: "white",
-      fades: false,
-    }),
-  );
+function init() {
+  player = new Player();
+  projectiles = [];
+  grids = [];
+  invaderProjectiles = [];
+  particles = [];
+  bombs = [];
+  powerUps = [];
+
+  keys = {
+    a: {
+      pressed: false,
+    },
+    d: {
+      pressed: false,
+    },
+    space: {
+      pressed: false,
+    },
+  };
+
+  frames = 0;
+  randomInterval = Math.floor(Math.random() * 500 + 500);
+  game = {
+    over: false,
+    active: true,
+  };
+
+  score = 0;
+
+  for (let i = 0; i < 100; i++) {
+    particles.push(
+      new Particle({
+        position: {
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+        },
+        velocity: {
+          x: 0,
+          y: 0.3,
+        },
+        radius: Math.random() * 2,
+        color: "white",
+        fades: false,
+      }),
+    );
+  }
 }
 
 function createParticles({ object, color, fades }) {
@@ -448,14 +480,17 @@ function rectangularCollision({ rectangle1, rectangle2 }) {
   );
 }
 
-function endgame() {
+function endGame() {
+  // Make player disappear and stop game
   setTimeout(() => {
     player.opacity = 0;
     game.over = true;
   }, 0);
 
+  // stop game and show restart screen after 2 seconds
   setTimeout(() => {
     game.active = false;
+    document.querySelector("#restartScreen").style.display = "flex";
   }, 2000);
 
   createParticles({
@@ -529,7 +564,7 @@ function animate() {
 
   for (let i = player.particles.length - 1; i >= 0; i--) {
     const particle = player.particles[i];
-    if (particle.opacity <= 0) {
+    if (particle.opacity === 0) {
       setTimeout(() => {
         player.particles.splice(i, 1);
       }, 0);
@@ -572,7 +607,7 @@ function animate() {
       })
     ) {
       invaderProjectiles.splice(index, 1);
-      endgame();
+      endGame();
     }
   });
 
@@ -717,7 +752,7 @@ function animate() {
         }) &&
         !game.over
       )
-        endgame();
+        endGame();
     } // end of invaders loop over grid.invaders
   });
 
@@ -766,6 +801,13 @@ function animate() {
 document.querySelector("#startButton").addEventListener("click", () => {
   document.querySelector("#startScreen").style.display = "none";
   document.querySelector("#scoreContainer").style.display = "block";
+  init();
+  animate();
+});
+
+document.querySelector("#restartButton").addEventListener("click", () => {
+  document.querySelector("#restartScreen").style.display = "none";
+  init();
   animate();
 });
 
