@@ -504,9 +504,20 @@ function endGame() {
 }
 
 let spawnBuffer = 500;
+let fps = 60;
+let fpsInterval = 1000 / fps;
+let msPrevious = window.performance.now();
 function animate() {
   if (!game.active) return;
   requestAnimationFrame(animate);
+
+  const msCurrent = window.performance.now();
+  const elapsed = msCurrent - msPrevious;
+
+  if (elapsed < fpsInterval) return;
+
+  msPrevious = msCurrent - (elapsed % fpsInterval);
+
   ctx.fillStyle = "black";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
