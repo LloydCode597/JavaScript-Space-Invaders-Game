@@ -843,9 +843,11 @@ addEventListener("keydown", ({ key }) => {
 
   switch (key) {
     case "a":
+    case "ArrowLeft":
       keys.a.pressed = true;
       break;
     case "d":
+    case "ArrowRight":
       keys.d.pressed = true;
       break;
     case " ":
@@ -865,7 +867,6 @@ addEventListener("keydown", ({ key }) => {
           },
         }),
       );
-
       break;
   }
 });
@@ -873,9 +874,11 @@ addEventListener("keydown", ({ key }) => {
 addEventListener("keyup", ({ key }) => {
   switch (key) {
     case "a":
+    case "ArrowLeft":
       keys.a.pressed = false;
       break;
     case "d":
+    case "ArrowRight":
       keys.d.pressed = false;
       break;
     case " ":
