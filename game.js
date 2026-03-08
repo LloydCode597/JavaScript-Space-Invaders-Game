@@ -6,10 +6,6 @@ const ctx = canvas.getContext("2d");
 canvas.width = 1024;
 canvas.height = 680;
 
-function randomBetween(min, max) {
-  return Math.random() * (max - min) + min;
-}
-
 let player = new Player();
 let projectiles = [];
 let grids = [];
@@ -38,6 +34,11 @@ let game = {
 };
 
 let score = 0;
+
+let spawnBuffer = 500;
+let fps = 60;
+let fpsInterval = 1000 / fps;
+let msPrevious = window.performance.now();
 
 function init() {
   player = new Player();
@@ -88,55 +89,6 @@ function init() {
   }
 }
 
-function createParticles({ object, color, fades }) {
-  for (let i = 0; i < 15; i++) {
-    particles.push(
-      new Particle({
-        position: {
-          x: object.position.x + object.width / 2,
-          y: object.position.y + object.height / 2,
-        },
-        velocity: {
-          x: (Math.random() - 0.5) * 2,
-          y: (Math.random() - 0.5) * 2,
-        },
-        radius: Math.random() * 3 + 1,
-        color: color || "#BAA0DE",
-        fades: true,
-      }),
-    );
-  }
-}
-
-function createScoreLabel({ object, score = 100 }) {
-  const scoreLabel = document.createElement("label");
-  scoreLabel.innerHTML = `+${score}`;
-  scoreLabel.style.position = "absolute";
-  scoreLabel.style.color = "white";
-  scoreLabel.style.left = `${object.position.x}px`;
-  scoreLabel.style.top = `${object.position.y}px`;
-  scoreLabel.style.userSelect = "none";
-  document.getElementById("parentDiv").appendChild(scoreLabel);
-
-  gsap.to(scoreLabel, {
-    y: -30,
-    opacity: 0,
-    duration: 1,
-    ease: "easeOut",
-    onComplete: () => {
-      document.getElementById("parentDiv").removeChild(scoreLabel);
-    },
-  });
-}
-
-function rectangularCollision({ rectangle1, rectangle2 }) {
-  return (
-    rectangle1.position.y + rectangle1.height >= rectangle2.position.y &&
-    rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
-    rectangle1.position.x <= rectangle2.position.x + rectangle2.width
-  );
-}
-
 function endGame() {
   // Make player disappear and stop game
   audio.gameOver.play();
@@ -158,10 +110,6 @@ function endGame() {
   });
 }
 
-let spawnBuffer = 500;
-let fps = 60;
-let fpsInterval = 1000 / fps;
-let msPrevious = window.performance.now();
 function animate() {
   if (!game.active) return;
   requestAnimationFrame(animate);
@@ -457,7 +405,8 @@ function animate() {
   if (
     keys.space.pressed &&
     player.powerUp === "MachineGun" &&
-    frames % 2 === 0
+    frames % 2 === 0 &&
+    game.over === false
   ) {
     if (frames % 6 === 0) audio.shoot.play();
     projectiles.push(
