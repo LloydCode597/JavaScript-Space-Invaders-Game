@@ -1,53 +1,47 @@
-# Space Invaders - Browser Game
+# JavaScript Space Invaders
 
-A modern recreation of the classic arcade game **Space Invaders** built entirely with **vanilla JavaScript** and **HTML5 Canvas**. Defend Earth from waves of descending alien invaders by maneuvering your spaceship, firing lasers, and surviving their counterattacks.
+A modern, browser-based recreation of the classic arcade game **Space Invaders**, built entirely with vanilla JavaScript, HTML5 Canvas, and minimal external libraries. The player controls a spaceship to defend against waves of descending invaders, utilizing precise movement, projectile firing, power-ups, explosive bombs, and dynamic audio-visual feedback.
 
-This project demonstrates core game development concepts including:
-- Game loop with `requestAnimationFrame`
-- Object-oriented design (classes for Player, Invaders, Projectiles, Particles, Grid)
-- Collision detection
-- Particle effects for explosions
-- Dynamic enemy waves with random spawning and shooting
-- Score tracking and game-over states
-- Smooth animations (player tilt, fading particles, background stars)
+This project serves as a comprehensive demonstration of:
+- Game loop management with fixed timestep (`requestAnimationFrame` + performance timing)
+- Object-oriented design using ES6 classes and modular file structure
+- 2D rendering and transformations on Canvas (rotation, particles, explosions)
+- Collision detection (rectangular and circular)
+- Procedural enemy wave generation with increasing difficulty
+- Audio integration (Howler.js) and animation (GSAP)
+- Responsive UI with start, score, and game-over screens
 
+Live Demo:  
+https://lloydcode597.github.io/JavaScript-Space-Invaders-Game/
 
-## ✨ Features
+## Features
 
-- **Player Controls**  
-  - Move: `A` / `D` or Left/Right Arrow keys  
-  - Shoot: `Spacebar`  
-  - Ship tilts slightly when moving for visual feedback
+- Smooth player movement with tilt animation (A/D or Arrow keys)
+- Single-shot and rapid-fire (MachineGun power-up) projectiles
+- Procedurally generated invader grids with side-to-side movement and descent
+- Invader counter-fire and player-damaging projectiles
+- Drifting power-ups that grant temporary rapid fire
+- Bouncing bombs with expanding GSAP-animated explosions
+- Particle effects for thrust, explosions, and background starfield
+- Dynamic floating score labels on enemy destruction
+- Sound effects and background music (laser, explosion, bonus, game over)
+- Start screen, score display, and animated game-over/restart interface
+- Fixed 60 FPS gameplay loop with delta-time awareness
 
-- **Enemies**  
-  - Procedurally generated grids of invaders (random rows/columns per wave)  
-  - Side-to-side movement with downward drop on edge hit  
-  - Random shooting toward the player
+## Technologies
 
-- **Game Mechanics**  
-  - Player & invader projectiles  
-  - Accurate bounding-box collision detection  
-  - Explosion particles on hits  
-  - Starfield background for immersion  
-  - Score system (100 points per invader destroyed)  
-  - Game over on player hit (with fade-out effect)
+- HTML5 / CSS3
+- Vanilla JavaScript (ES6+)
+- HTML5 Canvas API
+- GSAP (GreenSock Animation Platform) for smooth animations
+- Howler.js for cross-browser audio management
+- Modular class-based architecture (`js/classes/`)
 
-- **Visual & Audio Polish** (current / planned)  
-  - Sprite-based player and invaders  
-  - Fading particles for destruction  
-  - (Future: sound effects for lasers/explosions via Web Audio API)
+No build tools or frameworks are used — the project runs directly in modern browsers.
 
-## 🛠️ Technologies Used
-
-- HTML5  
-- CSS (minimal styling for centering & score)  
-- Vanilla JavaScript (ES6+)  
-- HTML5 Canvas API (rendering, transformations, particles)  
-- No external libraries or frameworks — pure browser-native code
-
-## 🔧 Installation & Running Locally
+## Installation & Local Development
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/LloydCode597/JavaScript-Space-Invaders-Game.git
-   cd space-invaders
+   git clone https://github.com/lloydcode597/JavaScript-Space-Invaders-Game.git
+   cd JavaScript-Space-Invaders-Game
